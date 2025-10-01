@@ -1,20 +1,31 @@
 {
-
   "name": "backend",
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
   "author": "",
-  "type": "commonjs",
+  "type": "module",
+  "private": true,
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
   "engines": {
-     "node": ">=18" 
+    "node": ">=18"
   },
   "dependencies": {
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "x402-express": "^0.6.5"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "^12.2.0",
+    "@types/chai": "^5.2.2",
+    "@types/node": "^24.6.1",
+    "axios": "^1.12.2",
+    "chai": "^6.2.0",
+    "jsonpath-plus": "^10.3.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }
