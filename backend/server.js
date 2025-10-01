@@ -1,45 +1,50 @@
-const express = require("express");
+import express from "express";
+import { paymentMiddleware } from "x402-express";
+import { createRequire } from "module";
+
 const app = express();
-
-// npm install @x402/express-middleware
-
 const PORT = process.env.PORT || 3000;
+const PAY_TO = process.env.PAY_TO || "0xcc2f51CfD41b7BD3c0ceeb59EF8d1f6A881B400E";
 
-// Middleware
-app.use(
-  // How much you want to charge, and where you want the funds to land
-  paymentMiddleware("0xYourAddress", { "/your-endpoint": "$0.01" })
+// Public
+app.get("/health", (_req, res) => res.status(200).json({ status: "OK" }));
+app.get("/hello", (_req, res) => res.type("text/plain").send("Hello, World!"));
+
+// Protected API only under /api/**
+const api = express.Router();
+
+api.use(
+  paymentMiddleware(PAY_TO, {
+    "/": {
+      price: "0.0001",
+      network: "base-sepolia",
+      config: { description: "API root access" },
+    },
+    "/weather": {
+      price: "0.0001",
+      network: "base-sepolia",
+      config: { description: "singapore weather data" },
+    },
+  })
 );
-// That's it! See examples/typescript/servers/express.ts for a complete example. Instruction below for running on base-sepolia.
 
-let paymentRequiredResponse = 
-{
-  // Version of the x402 payment protocol
-  x402Version: int,
-
-  // List of payment requirements that the resource server accepts. A resource server may accept on multiple chains, or in multiple currencies.
-  accepts: [paymentRequirements]
-
-  // Message from the resource server to the client to communicate errors in processing payment
-  error: string
-}
-
-
-// Middleware to check for X-HEADER
-app.use((req, res, next) => {
-  const header = req.get("X-PAYMENT");
-  // get b64 payload
-  if (!header) {
-    return res.status(402).send("X-PAYMENT missing");
-  }
-  next();
+api.get("/", (_req, res) => {
+  res.json({ message: "API root (paid)" });
 });
 
-
-// Single GET endpoint
-app.get("/", (req, res) => {
-  res.status(200).send("Success: X-PAYMENT received");
+api.get("/weather", (_req, res) => {
+  res.json({
+    location: "Singapore",
+    units: "metric",
+    temperatureC: 31,
+    condition: "Cloudy",
+    humidityPct: 70,
+    windKph: 10,
+    updatedAt: new Date().toISOString(),
+  });
 });
+
+app.use("/api", api);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
