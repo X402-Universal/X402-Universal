@@ -4,7 +4,6 @@
   "description": "A service for validating payments and resources.",
   "main": "src/server.ts",
   "scripts": {
-    // "start": "ts-node src/server.ts",
     "start": "node dist/server.js",
     "build": "tsc",
     "heroku-postbuild": "npm run build",
