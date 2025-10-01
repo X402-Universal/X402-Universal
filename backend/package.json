@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "express": "^5.1.0",
+    "viem": "^2.37.9",
     "x402-express": "^0.6.5"
   },
   "devDependencies": {
