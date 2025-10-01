@@ -16,11 +16,16 @@ describe("X402PoolA", function () {
     const token = await MockERC20.deploy("Mock USD", "mUSD", 6);
     await token.waitForDeployment();
 
+    // Create a mock USD.h token for testing
+    const MockUSDh = await ethers.getContractFactory("MockERC20", owner);
+    const usdh = await MockUSDh.deploy("USD.h", "USDh", 18);
+    await usdh.waitForDeployment();
+
     const X402PoolA = await ethers.getContractFactory("X402PoolA", owner);
-    const pool = await X402PoolA.deploy(await gateway.getAddress(), owner.address);
+    const pool = await X402PoolA.deploy(await gateway.getAddress(), await usdh.getAddress(), owner.address);
     await pool.waitForDeployment();
 
-    return { owner, payer, provider, other, gateway, token, pool, ethers };
+    return { owner, payer, provider, other, gateway, token, usdh, pool, ethers };
   }
 
   it("sets and emits route", async function () {
@@ -53,7 +58,7 @@ describe("X402PoolA", function () {
   });
 
   it("bulkTeleport moves credits, approves gateway and calls teleport", async function () {
-    const { owner, payer, token, pool, gateway } = await deployFixture();
+    const { owner, payer, token, pool, gateway, usdh } = await deployFixture();
 
     const providerId = ethers.keccak256(ethers.toUtf8Bytes("provider-1"));
     const assetId = ethers.keccak256(ethers.toUtf8Bytes("asset-USDh"));
@@ -76,8 +81,8 @@ describe("X402PoolA", function () {
     const after = await pool.credits(await token.getAddress(), providerId);
     expect(after).to.equal(0);
 
-    const allowance = await token.allowance(await pool.getAddress(), await gateway.getAddress());
-    expect(allowance).to.be.greaterThanOrEqual(amount);
+    const allowance = await usdh.allowance(await pool.getAddress(), await gateway.getAddress());
+    expect(allowance).to.be.greaterThanOrEqual(await pool.usdcToUSDh(amount));
 
     const totalTeleported = await gateway.getTotalTeleported(assetId);
     const converted = await pool.usdcToUSDh(amount);

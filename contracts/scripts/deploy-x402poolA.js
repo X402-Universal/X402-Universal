@@ -38,15 +38,18 @@ async function main() {
 
   const ownerToUse = OWNER ?? deployer.address;
 
+  // For now, we'll use a mock USD.h address - in production this should be the real USD.h token
+  const USDH_ADDRESS = "0xA801da100bF16D07F668F4A49E1f71fc54D05177"; // TODO: Set real USD.h address
+  
   const X402PoolA = await hre.ethers.getContractFactory("X402PoolA", deployer);
-  const pool = await X402PoolA.deploy(TOKEN_GATEWAY, ownerToUse);
+  const pool = await X402PoolA.deploy(TOKEN_GATEWAY, USDH_ADDRESS, ownerToUse);
   await pool.waitForDeployment();
 
   const address = await pool.getAddress();
   console.log("X402PoolA deployed at:", address);
 
   // Emit useful constructor args for verification tools
-  console.log("Constructor args:", [TOKEN_GATEWAY, ownerToUse]);
+  console.log("Constructor args:", [TOKEN_GATEWAY, USDH_ADDRESS, ownerToUse]);
 }
 
 main().catch((err) => {

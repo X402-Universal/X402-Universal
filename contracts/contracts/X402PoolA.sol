@@ -42,16 +42,19 @@ contract X402PoolA is Ownable {
         bytes32 assetId;      // TokenGateway assetId for `token` on A
         bytes   destChain;    // destination chain id
         address recipient;    // provider's wallet on destination chain
-        address usdh; // USD.h ERC20 on source chain
         bool    set;
     }
     mapping(address => mapping(bytes32 => Route)) public routes;
 
     // TokenGateway on Chain A
     address public immutable TOKEN_GATEWAY;
+    
+    // USD.h ERC20 token address
+    address public usdh;
 
-    constructor(address _tokenGateway, address _owner) Ownable(_owner) {
+    constructor(address _tokenGateway, address _usdh, address _owner) Ownable(_owner) {
         TOKEN_GATEWAY = _tokenGateway;
+        usdh = _usdh;
     }
 
     /* ---------------- admin ---------------- */
@@ -63,14 +66,12 @@ contract X402PoolA is Ownable {
         bytes32 providerId,
         bytes32 assetId,
         bytes calldata destChain,
-        address recipient,
-        address usdh
+        address recipient
     ) external onlyOwner {
         routes[token][providerId] = Route({
             assetId: assetId,
             destChain: destChain,
             recipient: recipient,
-            usdh: usdh,
             set: true
         });
         emit RouteSet(token, providerId, assetId, destChain, recipient);
@@ -111,8 +112,8 @@ contract X402PoolA is Ownable {
         credits[token][providerId] -= amount;
 
         // Approve gateway (approve MAX once for gas efficiency)
-        if (IERC20(r.usdh).allowance(address(this), TOKEN_GATEWAY) < usdcToUSDh(amount)) {
-            IERC20(r.usdh).approve(TOKEN_GATEWAY, type(uint256).max);
+        if (IERC20(usdh).allowance(address(this), TOKEN_GATEWAY) < usdcToUSDh(amount)) {
+            IERC20(usdh).approve(TOKEN_GATEWAY, type(uint256).max);
         }
 
         // Convert address to bytes32 for TokenGateway
@@ -135,6 +136,12 @@ contract X402PoolA is Ownable {
     }
 
     /* ---------------- helpers ---------------- */
+
+    /// @notice Set the USD.h token address
+    /// @dev Only owner can update the USD.h token address
+    function setUSDh(address _usdh) external onlyOwner {
+        usdh = _usdh;
+    }
 
     /// @notice TEST-ONLY: Owner can set credits for an arbitrary (token, providerId)
     /// @dev Useful for local testing and demos. REMOVE for production deployments.
