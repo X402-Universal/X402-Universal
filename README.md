@@ -9,7 +9,7 @@ Link showcase: https://www.asia.token2049.com/2049-origins
 
 ## Overview
 
-X402-Universal is a decentralized payment aggregation system designed to make X402 micropayments more interoperable across different blockchain networks. The system collects many small payments on Chain A and batches them into efficient cross-chain transfers to providers on Chain B using Hyperbridge, a Polkadot-based cross-chain infrastructure. This enables seamless cross-chain X402 payment flows and expands the reach of micropayment protocols across multiple blockchain ecosystems.
+X402-Universal is a decentralized payment aggregation system designed to make X402 micropayments more interoperable across different blockchain networks. The system collects many small payments on one chain and batches them into efficient cross-chain transfers to providers on another chain using Hyperbridge, a Polkadot-based cross-chain infrastructure. This enables seamless cross-chain X402 payment flows and expands the reach of micropayment protocols across multiple blockchain ecosystems.
 
 ## Architecture
 
