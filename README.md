@@ -1,10 +1,15 @@
 # X402-Universal
 
-A comprehensive cross-chain micropayment aggregation system that collects X402 micropayments on supported chains and performs batched cross-chain payouts to providers on destination chains.
+A comprehensive cross-chain micropayment aggregation system that collects X402 micropayments on one chain and performs batched cross-chain payouts to providers on destination chains.
+
+## Top 5 projects at Token2049 Origins Hackathon + Polkadot Ecosystem Prize 🏆
+
+Link showcase: https://www.asia.token2049.com/2049-origins
+
 
 ## Overview
 
-X402-Universal is a decentralized payment aggregation system designed to make X402 micropayments more interoperable across different blockchain networks. The system collects many small payments on one chain and batches them into efficient cross-chain transfers to providers on another chain using Hyperbridge, a Polkadot-based cross-chain infrastructure. This enables seamless cross-chain X402 payment flows and expands the reach of micropayment protocols across multiple blockchain ecosystems.
+X402-Universal is a decentralized payment aggregation system designed to make X402 micropayments more interoperable across different blockchain networks. The system collects many small payments on Chain A and batches them into efficient cross-chain transfers to providers on Chain B using Hyperbridge, a Polkadot-based cross-chain infrastructure. This enables seamless cross-chain X402 payment flows and expands the reach of micropayment protocols across multiple blockchain ecosystems.
 
 ## Architecture
 
@@ -217,31 +222,3 @@ For questions and support, please open an issue in the repository.
 ---
 
 **Note**: This is a demonstration project. For production use, ensure proper security audits and remove test-only functions.
-
-For devs
-
-Switch between app contexts if working on /backend or /validator-service
-
-heroku config --app backend-app
-heroku config --app validator-service-app
-
-OR
-
-heroku open --app backend-app
-heroku open --app validator-service-app
-
-
-
-Test the /api/hello endpoint
-https://validator-service-app-94f8eaf18c93.herokuapp.com
-
-curl https://validator-service-app-94f8eaf18c93.herokuapp.com/api/hello
-
-<!-- Set environment variables specific to validator-service
-heroku config:set NODE_ENV=production --app validator-service-app
-
-// temporarily set the default remote
-heroku git:remote -a validator-service-app -r heroku -->
-
-// TO DEPLOY
-git subtree push --prefix validator-service validator-service main --force
