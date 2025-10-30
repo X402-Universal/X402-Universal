@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import "./globals.css";
 
@@ -90,6 +90,9 @@ function Orbit({
 function Constellation() {
   // Detect small screens to simplify the number of rings
   const [isSmall, setIsSmall] = useState(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const coreRef = useRef<HTMLDivElement | null>(null);
+  const [rayCenter, setRayCenter] = useState<{ x: number; y: number }>({ x: 50, y: 50 });
   useEffect(() => {
     const mql = window.matchMedia("(max-width: 640px)");
     const update = () => setIsSmall(mql.matches);
@@ -97,13 +100,49 @@ function Constellation() {
     mql.addEventListener("change", update);
     return () => mql.removeEventListener("change", update);
   }, []);
+
+  // Align rays to actual center of the core node (accounts for layout/scale differences)
+  useEffect(() => {
+    const computeCenter = () => {
+      const container = containerRef.current;
+      const core = coreRef.current;
+      if (!container || !core) return;
+      const cb = container.getBoundingClientRect();
+      const kb = core.getBoundingClientRect();
+      const coreCx = kb.left + kb.width / 2;
+      const coreCy = kb.top + kb.height / 2;
+      // Map pixels to SVG viewBox (0..100) with preserveAspectRatio="xMidYMid meet"
+      const scale = Math.min(cb.width / 100, cb.height / 100);
+      const offsetX = (cb.width - 100 * scale) / 2;
+      const offsetY = (cb.height - 100 * scale) / 2;
+      const viewX = (coreCx - cb.left - offsetX) / scale;
+      const viewY = (coreCy - cb.top - offsetY) / scale;
+      if (Number.isFinite(viewX) && Number.isFinite(viewY)) {
+        // Only nudge upward on larger screens (md and up)
+        const isLargeScreen = window.innerWidth >= 768; // md breakpoint
+        const verticalNudge = isLargeScreen ? -15 : 0;
+        setRayCenter({
+          x: Math.max(0, Math.min(100, viewX)),
+          y: Math.max(0, Math.min(100, viewY + verticalNudge)),
+        });
+      }
+    };
+    computeCenter();
+    const ro = new ResizeObserver(computeCenter);
+    if (containerRef.current) ro.observe(containerRef.current);
+    window.addEventListener("resize", computeCenter);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", computeCenter);
+    };
+  }, []);
   return (
-    <div className="relative w-full aspect-square sm:aspect-[3/2] max-w-[90vw] sm:max-w-4xl mx-auto origin-center scale-100 sm:scale-[0.9] md:scale-100">
+    <div ref={containerRef} className="relative w-full aspect-square sm:aspect-[3/2] max-w-[90vw] sm:max-w-4xl mx-auto origin-center scale-100 sm:scale-[0.9] md:scale-100">
       {/* Glow */}
       <div className="absolute inset-0 blur-3xl bg-[radial-gradient(circle_at_center,rgba(0,153,255,0.25),transparent_60%)]" />
 
       {/* Core node */}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+      <div ref={coreRef} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
         <div className="relative">
           <div className="size-20 sm:size-24 rounded-full bg-white/10 border border-white/20 backdrop-blur flex items-center justify-center shadow-2xl overflow-hidden">
             <img src="/micropay.png" alt="MicroPay" className="w-12 h-12 sm:w-14 sm:h-14 object-contain rounded-xl" draggable={false} />
@@ -162,8 +201,8 @@ function Constellation() {
         </>
       )}
 
-      {/* Connection rays */}
-      <svg className="absolute inset-0" viewBox="0 0 800 800">
+      {/* Connection rays - dynamically centered to the core logo */}
+      <svg className="absolute inset-0" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
         <defs>
           <linearGradient id="ray" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="rgba(56,189,248,0.0)" />
@@ -171,17 +210,23 @@ function Constellation() {
             <stop offset="100%" stopColor="rgba(56,189,248,0.0)" />
           </linearGradient>
         </defs>
-        {[...Array(24)].map((_, i) => (
-          <line
-            key={i}
-            x1="400"
-            y1="400"
-            x2={400 + Math.cos((i / 24) * Math.PI * 2) * 360}
-            y2={400 + Math.sin((i / 24) * Math.PI * 2) * 360}
-            stroke="url(#ray)"
-            strokeWidth="1"
-          />
-        ))}
+        {[...Array(24)].map((_, i) => {
+          const angle = (i / 24) * Math.PI * 2;
+          const radius = 45; // normalized radius
+          const cx = rayCenter.x;
+          const cy = rayCenter.y;
+          return (
+            <line
+              key={i}
+              x1={cx}
+              y1={cy}
+              x2={cx + Math.cos(angle) * radius}
+              y2={cy + Math.sin(angle) * radius}
+              stroke="url(#ray)"
+              strokeWidth="0.25"
+            />
+          );
+        })}
       </svg>
     </div>
   );
