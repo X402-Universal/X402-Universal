@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import "./globals.css";
 
@@ -88,16 +88,25 @@ function Orbit({
 }
 
 function Constellation() {
+  // Detect small screens to simplify the number of rings
+  const [isSmall, setIsSmall] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 640px)");
+    const update = () => setIsSmall(mql.matches);
+    update();
+    mql.addEventListener("change", update);
+    return () => mql.removeEventListener("change", update);
+  }, []);
   return (
-    <div className="relative w-full aspect-[3/2] max-w-4xl mx-auto">
+    <div className="relative w-full aspect-square sm:aspect-[3/2] max-w-[90vw] sm:max-w-4xl mx-auto origin-center scale-100 sm:scale-[0.9] md:scale-100">
       {/* Glow */}
       <div className="absolute inset-0 blur-3xl bg-[radial-gradient(circle_at_center,rgba(0,153,255,0.25),transparent_60%)]" />
 
       {/* Core node */}
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
         <div className="relative">
-          <div className="size-24 rounded-full bg-white/10 border border-white/20 backdrop-blur flex items-center justify-center shadow-2xl overflow-hidden">
-            <img src="/micropay.png" alt="MicroPay" className="w-14 h-14 object-contain rounded-xl" draggable={false} />
+          <div className="size-20 sm:size-24 rounded-full bg-white/10 border border-white/20 backdrop-blur flex items-center justify-center shadow-2xl overflow-hidden">
+            <img src="/micropay.png" alt="MicroPay" className="w-12 h-12 sm:w-14 sm:h-14 object-contain rounded-xl" draggable={false} />
           </div>
           {/* Pulse */}
           <div className="absolute inset-0 rounded-full border border-sky-400/30 animate-ping" />
@@ -105,26 +114,53 @@ function Constellation() {
       </div>
 
       {/* Orbits */}
-      <Orbit
-        radius={110}
-        duration={28}
-        items={[
-          { src: "/base.png", alt: "Base" },
-          { src: "/arbitrum.svg", alt: "Arbitrum" },
-          { src: "/optimism.svg", alt: "Optimism" },
-        ]}
-      />
-      <Orbit
-        radius={170}
-        duration={40}
-        reverse
-        items={[
-          { src: "/ethereum.svg", alt: "Ethereum" },
-          { src: "/polkadot.svg", alt: "Polkadot" },
-          { src: "/bsc.svg", alt: "BSC" },
-        ]}
-      />
-      <Orbit radius={230} duration={56} items={[{ src: "/polygon.svg", alt: "Polygon" }]} />
+      {isSmall ? (
+        <>
+          <Orbit
+            radius={95}
+            duration={30}
+            items={[
+              { src: "/base.png", alt: "Base" },
+              { src: "/arbitrum.svg", alt: "Arbitrum" },
+              { src: "/optimism.svg", alt: "Optimism" },
+              { src: "/polygon.svg", alt: "Polygon"}
+            ]}
+          />
+          <Orbit
+            radius={150}
+            duration={44}
+            reverse
+            items={[
+              { src: "/ethereum.svg", alt: "Ethereum" },
+              { src: "/polkadot.svg", alt: "Polkadot" },
+              { src: "/bsc.svg", alt: "BSC" },
+            ]}
+          />
+        </>
+      ) : (
+        <>
+          <Orbit
+            radius={110}
+            duration={28}
+            items={[
+              { src: "/base.png", alt: "Base" },
+              { src: "/arbitrum.svg", alt: "Arbitrum" },
+              { src: "/optimism.svg", alt: "Optimism" },
+            ]}
+          />
+          <Orbit
+            radius={170}
+            duration={40}
+            reverse
+            items={[
+              { src: "/ethereum.svg", alt: "Ethereum" },
+              { src: "/polkadot.svg", alt: "Polkadot" },
+              { src: "/bsc.svg", alt: "BSC" },
+            ]}
+          />
+          <Orbit radius={230} duration={56} items={[{ src: "/polygon.svg", alt: "Polygon" }]} />
+        </>
+      )}
 
       {/* Connection rays */}
       <svg className="absolute inset-0" viewBox="0 0 800 800">
@@ -197,7 +233,7 @@ export default function Page() {
         {/* Background gradient */}
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,rgba(56,189,248,0.20),transparent_40%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.15),transparent_45%)]" />
 
-        <div className="max-w-6xl mx-auto px-6 pt-16 pb-16 sm:pt-24 sm:pb-24 md:pb-32">
+        <div className="max-w-6xl mx-auto px-6 pt-16 pb-28 sm:pt-24 sm:pb-36 md:pb-32">
           <div className="grid md:grid-cols-2 gap-10 items-center">
             <div>
               <div className="inline-flex items-center gap-2 text-xs px-2 py-1 rounded-full border border-white/20 bg-white/5 mb-4">
@@ -217,9 +253,8 @@ export default function Page() {
               </div>
             </div>
 
-            <div>
+            <div className="flex justify-center mt-8 sm:mt-0">
               <Constellation />
-             
             </div>
           </div>
         </div>
